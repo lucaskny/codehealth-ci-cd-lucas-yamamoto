@@ -1,0 +1,65 @@
+name: CI/CD CodeHealth Java
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    # Extra da atividade: usar um secret (opcional)
+    env:
+      DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # CI – Build
+      - name: Etapa de Build (javac simulado)
+        run: |
+          echo "🔧 Compilando App.java..."
+          javac App.java
+          echo "✅ Compilação concluída."
+
+      # CI – Testes (simulados rodando a classe App)
+      - name: Etapa de Testes (simulada)
+        run: |
+          echo "🧪 Executando testes simulados..."
+          java App
+          echo "✅ Execução de testes simulados finalizada."
+
+      # Relatório quando tudo deu certo
+      - name: Relatório - Sucesso
+        if: success()
+        run: |
+          echo "✅ Build e testes bem-sucedidos. Pipeline ok."
+
+      # Relatório quando deu erro
+      - name: Relatório - Falha
+        if: failure()
+        run: |
+          echo "❌ Testes falharam ou build quebrou. Corrija o código antes de tentar de novo."
+
+      # CD – Deploy simulado (só roda se deu sucesso)
+      - name: Deploy para Homologação (simulado)
+        if: success()
+        run: |
+          echo "🚀 Realizando deploy simulado para ambiente de homologação..."
+          mkdir -p staging
+          zip -r staging/codehealth-artifact.zip App.java README.md
+          echo "Deploy simulado concluído. Artefato gerado em staging/codehealth-artifact.zip"
+
+      # Extra: mostrar uso do DEPLOY_KEY (sem revelar)
+      - name: Mostrar uso do DEPLOY_KEY (simulado)
+        if: success()
+        run: |
+          echo "Usando DEPLOY_KEY armazenada em GitHub Secrets (valor não exibido por segurança)."
